@@ -1,30 +1,69 @@
 exports.handler = function (context, event, callback) {
-  const numbers = context.PHONE_NUMBERS.split(',').map((number) =>
-    number.trim()
-  );
+
   const response = new Twilio.twiml.VoiceResponse();
-  if (event.DialCallStatus === 'complete') {
-    // Call was answered and completed
-    response.hangup();
-  } else if (event.finished === 'true') {
-    if (context.FINAL_URL) {
-      response.redirect(context.FINAL_URL);
-    } else {
-      response.hangup();
+
+  // Grab the numbers list from Sync
+  const usersListArray = [
+    {
+      "index": 0,
+      "accountSid": "AC75ca6789a296a3f86c54367a0dc5a11a",
+      "serviceSid": "IS6b14a498d1287bf7c5bb9b738d7b80aa",
+      "listSid": "ES68d93ad07dfc4b23ad7a33b108510243",
+      "url": "https://sync.twilio.com/v1/Services/IS6b14a498d1287bf7c5bb9b738d7b80aa/Lists/ES68d93ad07dfc4b23ad7a33b108510243/Items/0",
+      "revision": "2",
+      "data": {
+        "phone": "+61401277115",
+        "busy": false,
+        "name": "Des"
+      },
+      "dateExpires": null,
+      "dateCreated": "2021-07-19T01:43:12.000Z",
+      "dateUpdated": "2021-07-19T06:56:35.000Z",
+      "createdBy": "system"
+    },
+    {
+      "index": 1,
+      "accountSid": "AC75ca6789a296a3f86c54367a0dc5a11a",
+      "serviceSid": "IS6b14a498d1287bf7c5bb9b738d7b80aa",
+      "listSid": "ES68d93ad07dfc4b23ad7a33b108510243",
+      "url": "https://sync.twilio.com/v1/Services/IS6b14a498d1287bf7c5bb9b738d7b80aa/Lists/ES68d93ad07dfc4b23ad7a33b108510243/Items/1",
+      "revision": "4",
+      "data": {
+        "phone": "+61405468859",
+        "busy": true,
+        "name": "Kris"
+      },
+      "dateExpires": null,
+      "dateCreated": "2021-07-19T01:43:41.000Z",
+      "dateUpdated": "2021-07-19T06:57:27.000Z",
+      "createdBy": "system"
     }
-  } else {
-    const numberToDial = event.nextNumber ? event.nextNumber : numbers[0];
-    const currentNumberIndex = numbers.indexOf(numberToDial);
-    let url;
-    if (currentNumberIndex + 1 === numbers.length) {
-      // No more numbers to call after this.
-      url = '/hunt?finished=true';
+  ]
+
+  const numbers = [];
+
+  usersListArray.forEach(element => {
+    if (element.data.busy) {
+      console.log(`Busy: ${element.data.busy} - ${element.data.name} is busy, so not calling`);
     } else {
-      const nextNumber = numbers[currentNumberIndex + 1];
-      url = `/hunt?nextNumber=${encodeURIComponent(nextNumber)}`;
+      console.log(`Busy: ${element.data.busy} - Not busy, so calling ${element.data.name}`);
+
+      // response.dial('415-123-4567');
+
     }
-    const dial = response.dial({ action: url });
-    dial.number(numberToDial);
-  }
-  callback(null, response);
+    //console.log(`Entry: ${element.index}, phone: ${element.data.phone} is busy: ${element.data.busy}`);
+  });
+
+
+
+  callback(null, "Done")
 };
+
+
+
+/**
+ * timeout
+Specifying a timeout will set the limit in seconds that <Dial> will wait for the dialed party to answer the call.
+This tells Twilio how long to let the call ring before giving up and setting no-answer as the DialCallStatus.
+timeout's default value is 30 seconds, the minimum allowed value is five seconds, and the maximum value is 600 seconds.
+ */
